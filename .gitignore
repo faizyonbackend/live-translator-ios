@@ -1,0 +1,14 @@
+# Xcode
+build/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+.DS_Store
+
+# Sideloading artifacts
+Payload/
+*.ipa
+*.zip
+
+# VS Code
+.vscode/

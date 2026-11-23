@@ -1,0 +1,61 @@
+name: Build iOS Offline Live Translator
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build iOS App (.ipa)
+    runs-on: macos-14 # Apple Silicon macOS runner with Xcode 15/16
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode Version
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app || sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode Project
+        run: xcodegen generate
+
+      - name: Build Application (.app)
+        run: |
+          xcodebuild clean build \
+            -project LiveTranslator.xcodeproj \
+            -scheme LiveTranslator \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath ./build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Package into .ipa for Sideloading
+        run: |
+          mkdir -p Payload
+          cp -r ./build/Build/Products/Release-iphoneos/LiveTranslator.app Payload/
+          zip -r LiveTranslator.ipa Payload
+          zip -r LiveTranslator-App.zip ./build/Build/Products/Release-iphoneos/LiveTranslator.app
+
+      - name: Upload .ipa Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiveTranslator-iOS-IPA
+          path: LiveTranslator.ipa
+          retention-days: 14
+
+      - name: Upload .app Zip Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiveTranslator-iOS-App-Folder
+          path: LiveTranslator-App.zip
+          retention-days: 14
