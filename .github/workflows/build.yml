@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     name: Build iOS App (.ipa)
-    runs-on: macos-latest # Uses the latest supported Apple Silicon runner (macOS 15+)
+    runs-on: macos-latest
 
     steps:
       - name: Checkout Repository
@@ -33,7 +33,7 @@ jobs:
             -project LiveTranslator.xcodeproj \
             -scheme LiveTranslator \
             -configuration Release \
-            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
             -derivedDataPath ./build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
